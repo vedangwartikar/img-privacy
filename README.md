@@ -49,7 +49,7 @@ Then, start the Vite server.
 pnpm run dev
 ```
 
-The client will start on http://localhost:3000.
+The client will start on http://localhost:5173.
 
 Now, you can open your browser and navigate to http://localhost:5173 to see the application. The client will communicate with the server on http://localhost:5000.
 
