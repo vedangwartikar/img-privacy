@@ -16,10 +16,14 @@ Inside the server/ directory, create a virtual environment for the backend code
 
 ```
 pip install virtualenv
-python3 -m virtualenv flask_env
+virtualenv flask_env
 cd flask_env
-source Scripts/activate # For Linux and MacOS
-Scripts\activate # For Windows
+
+# For Linux and MacOS
+source bin/activate
+
+# For Windows
+Scripts\activate
 ``` 
 
 Install the required Python packages using pip.
