@@ -27,7 +27,7 @@ Install the required Python packages using pip.
 
 Copy the [YOLOv3](https://pjreddie.com/darknet/yolo/) object detection [weights file](https://pjreddie.com/media/files/yolov3.weights) to the src/ directory
 
-6. Run the Flask application.
+Run the Flask application.
 
 `python src/app.py`
 
@@ -48,10 +48,10 @@ The UI client will be available at **https://localhost:5173**
 
 - Drag and drop an image to the box or click on the **Click to browse file** text to select an image from the system
 - ⁠After selecting an image, click on the **Upload Image** button
-- Preview will be available on the left, and on the right, you will see Object detected in the image
+- Preview will be available on the left, and on the right, you will see the Object detected in the image
 - You can select the particular objects you want to blur and select the blur level (1-5)
 - ⁠Then click on **Protect my Image** button to apply the filters and blur the image (preview visible on the left)
-- ⁠Finally, click on the “Download Image” button to download the output image
+- ⁠Finally, click on the **Download Image** button to download the output image
 
 Below is an example of how the output image will look like once the sensitive information has been hidden -
 
