@@ -14,14 +14,16 @@ import requests
 app = Flask(__name__)
 CORS(app)
 
+# URL to fetch the MSCOCO labels
 labels_url = "https://raw.githubusercontent.com/amikelive/coco-labels/master/coco-labels-2014_2017.txt"
 
 LABELS = requests.get(labels_url).text.strip().split("\n")
 
-
+# Function to detect objects in an image based on selected labels
 def detect_objects(image, selected_labels_original):
     selected_labels = selected_labels_original.copy()
 
+    # Checking if "face" is in the selected labels list and adjusting it to also detect "person"
     if "face" in selected_labels:
         if "person" in selected_labels:
             selected_labels.remove("face")
@@ -30,13 +32,11 @@ def detect_objects(image, selected_labels_original):
 
     # Load MSCOCO labels and pre-trained model
     net = cv2.dnn.readNet("./src/yolov3.weights", "./src/yolov3.cfg")
-    # with open("./src/coco.names", "w") as f:
-    #     f.write("\n".join(LABELS))
 
-    # Load image and convert to blob
+    # Preparing image for inference by converting it to a blob
     blob = cv2.dnn.blobFromImage(image, 1 / 255.0, (416, 416), swapRB=True, crop=False)
 
-    # Set input and perform forward pass
+    # Setting the input and performing forward pass through the network
     net.setInput(blob)
     layer_names = net.getLayerNames()
     output_layers = [layer_names[i - 1] for i in net.getUnconnectedOutLayers()]
@@ -47,6 +47,7 @@ def detect_objects(image, selected_labels_original):
     confidences = []
     class_ids = []
 
+    # Processing the detections
     for output in outputs:
         for detection in output:
             scores = detection[5:]
@@ -63,6 +64,7 @@ def detect_objects(image, selected_labels_original):
                 confidences.append(float(confidence))
                 class_ids.append(class_id)
 
+    # Filtering the detections based on selected labels
     if len(selected_labels) == 0 or selected_labels[0] == "":
         return boxes, confidences, class_ids
     else:
@@ -89,6 +91,7 @@ def blur_objects(
 
     selected_labels = selected_labels_original.copy()
 
+    # Check if "face" is in selected labels and adjust to include "person" if necessary
     if "face" in selected_labels:
         if "person" in selected_labels:
             selected_labels.remove("face")
@@ -100,12 +103,14 @@ def blur_objects(
     # if "PII" in selected_labels:
     #     selected_labels.add("laptop", "tv", "cell phone")
 
+    # Loop through detected objects
     for i, box in enumerate(boxes):
         x, y, w, h = box
 
         class_id = class_ids[i]
         label = LABELS[class_id]
 
+        # Blur license plate if object is a car, truck, or bus and "license plate" is selected
         if (
             label == "car" or label == "truck" or label == "bus"
         ) and "license plate" in selected_labels:
@@ -118,6 +123,7 @@ def blur_objects(
                 int(h * 0.1),
             ]
 
+            # Extract the region of interest (license plate)
             roi = image[
                 license_plate_region[1] : license_plate_region[1]
                 + license_plate_region[3],
@@ -128,6 +134,7 @@ def blur_objects(
             if roi.size == 0:
                 continue
 
+            # Apply Gaussian blur to the license plate region
             blur_intensity = 1 + 0.5 * blur_level
             blurred_roi = cv2.GaussianBlur(roi, (25, 25), blur_intensity)
 
@@ -138,6 +145,7 @@ def blur_objects(
                 + license_plate_region[2],
             ] = blurred_roi
 
+        # Blur faces if object is a person and "face" is selected
         elif label == "person" and "face" in selected_labels:
             # print("Person detected")
 
@@ -149,16 +157,18 @@ def blur_objects(
                 gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30)
             )
 
-            # Blur faces within the bounding box of the person
+            # Loop through detected faces within the bounding box of the person
             for fx, fy, fw, fh in faces:
                 face_roi = image[fy : fy + fh, fx : fx + fw]
 
                 if face_roi.size == 0:
                     continue
-
+                
+                # Apply Gaussian blur to the face region
                 blur_intensity = 1 + 0.5 * blur_level
                 blurred_face = cv2.GaussianBlur(face_roi, (25, 25), blur_intensity)
 
+                # Replace the original face region with the blurred version
                 image[fy : fy + fh, fx : fx + fw] = blurred_face
 
         elif (
@@ -172,9 +182,11 @@ def blur_objects(
             if roi.size == 0:
                 continue
 
+            # Apply Gaussian blur to the object region
             blur_intensity = 1 + 0.5 * blur_level
             blurred_roi = cv2.GaussianBlur(roi, (25, 25), blur_intensity)
 
+            # Replace the original object region with the blurred version
             image[y : y + h, x : x + w] = blurred_roi
 
     return image
@@ -195,6 +207,7 @@ def blur_license_plate_func(
     selected_labels.append("truck")
     selected_labels.append("bus")
 
+    # Loop through detected objects
     for i, box in enumerate(boxes):
         x, y, w, h = box
 
@@ -202,8 +215,6 @@ def blur_license_plate_func(
         label = LABELS[class_id]
 
         if label == "car" or label == "truck" or label == "bus":
-            # print("Car/Truck/Bus detected")
-
             license_plate_region = [
                 int(x + w * 0.2),
                 int(y + h * 0.4),
@@ -211,6 +222,7 @@ def blur_license_plate_func(
                 int(h * 0.7),
             ]
 
+            # Extract the region of interest (license plate)
             roi = image[
                 license_plate_region[1] : license_plate_region[1]
                 + license_plate_region[3],
@@ -221,9 +233,11 @@ def blur_license_plate_func(
             if roi.size == 0:
                 continue
 
+            # Apply Gaussian blur to the license plate region
             blur_intensity = 1 + 0.5 * blur_level
             blurred_roi = cv2.GaussianBlur(roi, (25, 25), blur_intensity)
 
+            # Replace the original license plate region with the blurred version
             image[
                 license_plate_region[1] : license_plate_region[1]
                 + license_plate_region[3],
@@ -236,13 +250,16 @@ def blur_license_plate_func(
 
 @app.route("/blur_sensitive_info", methods=["POST"])
 def process_image():
+    # Check if an image is properly provided in the request
     if "image" not in request.files:
         return jsonify({"error": "No image provided"}), 400
 
+    # Extract parameters from the request
     blur_level = int(request.form.get("blur_level", 1))
     blur_license_plate = bool(int(request.form.get("blur_license_plate", 0)))
     selected_labels = request.form.get("labels", []).split(",")
 
+    # Print the extracted parameters for debugging
     print("blur_license_plate:", blur_license_plate)  # True or False
     print("Selected labels:", selected_labels)  # car, person, etc.
 
@@ -251,15 +268,16 @@ def process_image():
 
     # Blur sensitive information in the image with the specified blur level
 
-    # blurred_img = blur_sensitive_info(img, blur_level)
-
+    # Convert the image to OpenCV format (BGR)
     img = cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR)
+    # Detect objects in the image based on selected labels
     boxes, _, class_ids = detect_objects(img, selected_labels)
 
     print("class_ids", class_ids)
 
     unique_labels = set()
 
+    # If no specific labels are selected, infer labels from detected objects
     if len(selected_labels) == 0 or selected_labels[0] == "":
         for i, box in enumerate(boxes):
             label = LABELS[class_ids[i]]
@@ -268,9 +286,7 @@ def process_image():
 
         print("Unique labels of the detected objects:", list(unique_labels))
 
-        # if any(label in unique_labels for label in ["car", "truck", "bus"]):
-        #     unique_labels.add("license plate")
-
+        # Adjust detected labels if necessary
         if any(label in unique_labels for label in ["person"]):
             unique_labels.add("face")
 
@@ -285,6 +301,7 @@ def process_image():
 
     blurred_img = img
 
+    # Blur license plate if selected
     if blur_license_plate:
         boxes_2, _, class_ids_2 = detect_objects(img, [])
 
@@ -292,8 +309,8 @@ def process_image():
             img, boxes_2, class_ids_2, selected_labels, blur_license_plate, blur_level
         )
 
+    # Blur device screens if selected
     if "device screens" in selected_labels:
-        # selected_labels_copy = selected_labels.copy()
         selected_labels_copy = []
         selected_labels_copy.append("laptop")
         selected_labels_copy.append("tv")
@@ -310,6 +327,7 @@ def process_image():
             blur_level,
         )
 
+    # Blur objects based on selected labels
     if len(selected_labels) != 0 and selected_labels[0] != "":
 
         blurred_img = blur_objects(
@@ -321,7 +339,7 @@ def process_image():
             blur_level,
         )
 
-    # cv2.imwrite("blurred_img.png", blurred_img)
+    # Convert the blurred image back to PIL format (RGB)
     blurred_img = Image.fromarray(cv2.cvtColor(blurred_img, cv2.COLOR_BGR2RGB))
 
     # Convert the blurred image to bytes and then to base64
@@ -329,6 +347,7 @@ def process_image():
     blurred_img.save(buffered, format="JPEG")
     blurred_img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
 
+    # Return the blurred image and unique detected labels to the display on the UI Client
     return (
         jsonify(
             {"blurred_image": blurred_img_str, "unique_labels": list(unique_labels)}
