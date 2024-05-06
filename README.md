@@ -16,9 +16,10 @@ Inside the server/ directory, create a virtual environment for the backend code
 
 ```
 pip install virtualenv
-python3 -m venv flask_env
+python3 -m virtualenv flask_env
 cd flask_env
-source Scripts/activate
+source Scripts/activate # For Linux and MacOS
+Scripts\activate # For Windows
 ``` 
 
 Install the required Python packages using pip.
@@ -42,7 +43,7 @@ npm install
 npm run dev
 ```
 
-The UI client will be available at **https://localhost:5173**
+The UI client will be available at **http://localhost:5173**
 
 ## Website Usage
 
