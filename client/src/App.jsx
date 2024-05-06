@@ -48,7 +48,7 @@ const App = () => {
 					},
 				}
 			);
-			// console.log("\nresponse:", response.data);
+
 			setProcessedImage(
 				`data:image/jpeg;base64,${response.data.blurred_image}`
 			);
@@ -58,7 +58,6 @@ const App = () => {
 			}
 		} catch (error) {
 			console.log("\nERROR>> ", error);
-			// alert("Error uploading image. Please try again.");
 		}
 
 		setLoading(false);
@@ -118,12 +117,7 @@ const App = () => {
 				Upload Image
 			</Button>
 
-			<Divider
-				orientation="horizontal"
-				variant="fullWidth"
-				flexItem
-				// style={{ marginTop: "60px" }}
-			/>
+			<Divider orientation="horizontal" variant="fullWidth" flexItem />
 
 			{processedImage && (
 				<>
@@ -138,11 +132,7 @@ const App = () => {
 							</Typography>
 
 							<div className="img-container">
-								<img
-									src={processedImage}
-									alt="Processed"
-									// style={{ maxWidth: "50%" }}
-								/>
+								<img src={processedImage} alt="Processed" />
 							</div>
 						</div>
 
