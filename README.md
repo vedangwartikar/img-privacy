@@ -2,55 +2,53 @@
 
 ## Project Setup
 
-This project consists of a Flask server and a React client using Vite & pnpm. Follow the instructions below to get started.
+This project consists of a Flask server and a React client using Vite & npm. Follow the instructions below to get started.
 
-## Server Setup
+## Overview
 
-The server is a Flask application. To start the server, navigate to the server directory and activate the virtual environment named "flask_env". If you haven't created the virtual environment yet, you can do so using the following commands:
+This application uses a Python Flask backend server to perform object detection with YOLOv3 and blurring sensitive information using OpenCV. The system architecture includes a UI client that sends input images to the Flask backend. Object detection is performed on the backend, and the processed image with blurred objects is sent back to the UI client.
 
-```bash
-cd server
-virtualenv flask_env
-```
+## Prerequisites
 
-Activate the virtual environment:
+• Python 3.x
 
-```bash
-source flask_env/bin/activate
-```
+• pip (Python package installer)
 
-Install the required dependencies:
+• virtualenv (to create a virtual environment for Python projects)
 
-```bash
-pip3 install -r requirements.txt
-```
+## Setup
+   
+1. Change directory to the server folder.
 
-Then, start the Flask server.
+      `cd server`
+   
 
-```bash
-export FLASK_APP=app.py
-flask run
-```
+2. Install virtualenv using pip if it's not already installed.
 
-The server will start on http://localhost:5000.
+      `pip install virtualenv`
+   
 
-## Client Setup
+3. Create a virtual environment in the server directory.
 
-The client is a React application built using Vite and `pnpm`. To start the client, navigate to the client directory and install the required dependencies.
+      `virtualenv flask_env`
+   
 
-```bash
-cd client
-pnpm install
-```
+4. Activate the virtual environment.
 
-Then, start the Vite server.
+   For Windows:
+      `flask_env\Scripts\activate`
+   
 
-```bash
-pnpm run dev
-```
+   For MacOS/Linux:
+      `source flask_env/bin/activate`
+   
 
-The client will start on http://localhost:5173.
+5. Install the required Python packages using pip.
 
-Now, you can open your browser and navigate to http://localhost:5173 to see the application. The client will communicate with the server on http://localhost:5000.
+      `pip install flask flask_cors requests Pillow torch torchvision opencv-python`
+   
 
-Remember to start the server before the client, as the client depends on the server for API calls.
+6. Run the Flask application.
+
+      `python src/app.py`
+   
